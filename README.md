@@ -26,7 +26,7 @@ Arguments:
 - -n length of the reduced fingerprints
 - -t reduction method: JL (Johnson-Lindenstrauss) or MH (MinHash)
 - -i input file (.txt or .bin)
-- -o output file
+- -o output file (.bin, .csv, .pkl, .npy)
 
 To view detailed argument description:
 ```sh
@@ -36,6 +36,12 @@ Example of encoding and reducing fingerprints given list of SMILES:
 ```sh
 ./run.sh -m 10 -r 3 -N 1024 -n 256 -t MH -i data/smiles_sample.txt
 ```
+
+### Reading the reduced vectors
+Handling of reduced vectors stored in various formats is implemented in the `src/convert.py`.
+
+### Comparing the reduced vectors
+The correct calculation of Jaccard similarity for reduced fingerprints is described in `src/compare.py`.
 
 ## License
 The project is under the MIT license.

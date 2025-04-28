@@ -7,16 +7,17 @@ usage() {
   echo "Arguments:"
   echo "  -m <int>         Required: number of compounds"
   echo "  -r <int>         Required: radius of ECFP"
-  echo "  -N <int>         Required: length of original ECFP fingeprints"
-  echo "  -n <int>         Required: length of reduced fingeprints. For preserving Jaccard similarity, use n > log(m)"
+  echo "  -N <int>         Required: length of original ECFP fingerprints"
+  echo "  -n <int>         Required: length of reduced fingerprints. For preserving Jaccard similarity, use n > log(m)"
   echo "  -t <type>        Optional: reduction method 'JL' for Johnson-Lindenstrauss or 'MH' for MinHash, default is 'MH'"
   echo "  -i <file_path>   Required: input file path (.txt for SMILES, .bin for fingerprints)"
-  echo "  -o <file_path>   Optional: output file path (.bin), default is <input_file>_reduced.bin"
+  echo "  -o <file_path>   Optional: output file path (.bin, .csv, .pkl, .npy), default is <input_file>_reduced.bin"
   echo ""
   echo "  --help           help message"
   exit 0
 }
 
+# Check for --help flag
 for arg in "$@"; do
   if [[ "$arg" == "--help" ]]; then
     usage
@@ -64,6 +65,8 @@ if [[ -z "$output" ]]; then
   output="${filename}_reduced.bin"
 fi
 
+# Define reduced file name
+file_out_fps_reduced="${output%.*}_reduced.bin"
 extension="${input##*.}"
 
 if [[ "$extension" == "txt" ]]; then
@@ -79,8 +82,21 @@ else
 fi
 
 echo "Performing reduction"
-./build/reduce "$m" "$r" "$N" "$n" "$type" "$file_out_fps" "$output"
+./build/reduce "$m" "$r" "$N" "$n" "$type" "$file_out_fps" "$file_out_fps_reduced"
 if [ $? -eq 0 ]; then
+  output_extension="${output##*.}"
+  if [[ "$output_extension" == "bin" ]]; then
+    mv "$file_out_fps_reduced" "$output"
+  else
+    echo "Converting $file_out_fps_reduced to $output"
+    python3 ./src/convert.py "$m" "$n" "$file_out_fps_reduced" "$output"
+    if [ $? -eq 0 ]; then
+      rm -f "$file_out_fps_reduced"
+    else
+      echo "Conversion failed." >&2
+      exit 2
+    fi
+  fi
   echo "Fingerprints saved in: $output"
 else
   echo "Reduction failed." >&2
