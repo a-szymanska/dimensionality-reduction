@@ -1,0 +1,30 @@
+\begin{circuitikz}
+\tikzstyle{every node}=[font=\large]
+    \draw [line width=0.2mm,  short] (0,8.5) -- (1.5,10);
+    \draw [line width=0.2mm,  short] (1.5,10) -- (3,8.5);
+    \draw [line width=0.2mm,  short] (3,8.5) -- (4.5,10);
+    \draw [line width=0.2mm,  short] (4.5,10) -- (6,8.5);
+    \draw [line width=0.2mm,  short] (6,8.5) -- (7.5,10);
+    \draw [line width=0.2mm,  short] (7.5,10) -- (9,8.5);
+    \node at (0,8) {0};
+    \node at (1.5,10.5) {1};
+    \node at (3,8) {2};
+    \node at (4.5,10.5) {3};
+    \node at (7.5,10.5) {\dots};
+    \node at (9,8) {\( k \)};
+    
+    \draw [line width=0.2mm,  short] (12,8.5) -- (13.5,10);
+    \draw [line width=0.2mm,  short] (13.5,10) -- (15,8.5);
+    \draw [line width=0.2mm,  short] (15,8.5) -- (16.5,10);
+    \draw [line width=0.2mm,  short] (16.5,10) -- (18,8.5);
+    \draw [line width=0.2mm,  short] (18,8.5) -- (19.5,10);
+    \draw [line width=0.2mm,  short] (19.5,10) -- (21,8.5);
+    \draw [line width=0.2mm, color={figBlue}, short](22.5,10) -- (21,8.5);
+    \node at (12,8) {0};
+    \node at (13.5,10.5) {1};
+    \node at (15,8) {2};
+    \node at (16.5,10.5) {3};
+    \node at (19.5,10.5) {\dots};
+    \node at (21,8) {\( k \)};
+    \node at (22.5,10.5) {\( k+1 \)};
+\end{circuitikz}

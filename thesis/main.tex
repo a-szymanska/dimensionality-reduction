@@ -1,0 +1,62 @@
+\documentclass{report}
+\input{preamble}
+
+\title{}
+\author{}
+\date{}
+
+\begin{document}
+\input{chapters/frontback/titlepage}
+
+\input{chapters/frontback/acknowledgements}
+
+\tableofcontents
+
+% Notation
+\chapter*{Notation} \label{ch:notation}
+\input{chapters/frontback/notation}
+
+% Chatper I
+\chapter{Introduction}
+\section{Numerical representation of chemical structures}
+\input{chapters/chapter1/introduction}
+
+\section{Extended Connectivity Fingerprints}
+\input{chapters/chapter1/ecfp-algorithm}
+
+\section{Experimental properties of the ECFP encoding}
+\input{chapters/chapter1/random-stat}
+\input{chapters/chapter1/collisions}
+
+% Chatper II
+\chapter{Numerical representation}
+\section{Variable-length representation}
+\input{chapters/chapter2/data-struct}
+
+\section{Fixed-length representation}
+\input{chapters/chapter2/johnson-lindenstrauss}
+\input{chapters/chapter2/minhash}
+
+% Chatper III
+\chapter{Applications}
+\section{Effect of dimension reduction on pairwise similarity}
+\input{chapters/chapter3/reduction-and-similarity}
+
+\section{Effect of dimension reduction on KNN-search accuracy}
+\input{chapters/chapter3/knn-search}
+
+\section{Effect of dimension reduction on KNN-search time}
+\input{chapters/chapter3/search-time}
+
+\section{Summary}
+\input{chapters/chapter3/summary}
+
+% Appendix
+\appendix
+\appendixchapterformat
+\chapter{Appendix} \label{ch:appendix}
+\input{chapters/frontback/appendix}
+
+\printbibliography
+
+\end{document}

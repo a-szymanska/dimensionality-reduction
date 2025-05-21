@@ -1,0 +1,27 @@
+\subsection{Effect of~collisions on the~similarity coefficient}
+It is possible to~estimate the~effect of~a~single collision on a~value of~the~similarity coefficient.
+\begin{propos}
+    Given two non-zero encodings \( X \neq Y \),\: let \( x_1, x_2 \) correspond to~identifiers from \( X \) that are projected onto the~same bit. The absolute error for Jaccard similarity of~\( X \) and \( Y \) is at most \( \frac{1}{|X \cup Y| - 1} \).
+\end{propos}
+\begin{proof}
+    The similarity coefficient is defined as~\( s(X,Y) = \frac{|X \cap Y|}{|X \cup Y|} \), where \( \abs{X \cup Y} \geq 2 \), thus after the~reduction at least one bit is set. Let \( \tilde{s}(X,Y) \) denote the~Jaccard similarity coefficient of~the~encodings of~\( X \) and \( Y \) with a~single collision of~the~bits \( x_1,\; x_2 \). There are three cases to~consider:
+    \begin{itemize}
+        \item \( x_1, x_2 \notin X \cap Y \): \\
+        The value of~\( |X \cap Y| \) does not change because \( x_1, x_2 \) remain outside the~intersection and the~value of~\( |X \cup Y| \) decreases by \( 1 \).
+        \[
+            \abs{s(X,Y) - \tilde{s}(X,Y)} = \abs{\frac{|X \cap Y|}{|X \cup Y|} - \frac{|X \cap Y|}{|X \cup Y|-1}} = \frac{|X \cap Y|}{|X \cup Y|(|X \cup Y|-1)} \leq \frac{1}{|X \cup Y| - 1}
+        \]
+        This gives an absolute error of \( \frac{1}{|X \cup Y|-1} \).
+        
+        \item \( x_1 \in X \cap Y,\; x_2 \notin X \cap Y \): \\
+         In this case, the~value of~\( |X \cap Y| \) also doesn't change because initially only \( x_1 \) contribute to~\( |X \cap Y| \). The value of~\( |X \cup Y| \) again decreases by \( 1 \). The result is therefore the~same as~for the~previous case.
+         
+        \item \( x_1, x_2 \in X \cap Y \): \\
+        Both \( |X \cap Y| \) and \( |X \cup Y| \) decrease.
+        \[
+            \abs{s(X,Y) - \tilde{s}(X,Y)} = \abs{\frac{|X \cap Y|}{|X \cup Y|} - \frac{|X \cap Y|-1}{|X \cup Y|-1}} = \frac{|X \cup Y|-|X \cap Y|}{|X \cup Y|(|X \cup Y|-1)} < \frac{1}{|X \cup Y|-1}
+        \]
+        This gives an absolute error of at most \( \frac{1}{|X \cup Y|-1} \).
+    \end{itemize}
+\end{proof}
+For single collisions, their effect on the~value of~the~Jaccard similarity coefficient is rather small, although they may strongly influence the~results of~searching for structures at a~fixed similarity cut-off. Minimising the~inaccuracy by choosing a~sufficiently large \( N \) increases the~sparsity of~the~representation, the~problem to~be solved.

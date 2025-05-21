@@ -1,0 +1,48 @@
+\subsection{Data structure for representing fingerprints}
+The straightforward solution to the problem of~sparsity is to store all generated identifiers in~a~structure of variable size. No information is lost, and the size of~the structure is at most \( (r+1) \) times the number of~vertices, so in the average case it is smaller than the standard fingerprint length. This makes such a~representation implementable in real-life cases. \\
+The designed structure should allow:
+\begin{itemize}
+\singlespacing
+    \item iteration over identifiers,
+    \item checking whether the encoding contains a~given identifier,
+    \item fast calculation of~the Jaccard similarity coefficient (i.\:e. the size of~intersection and union of~the sets of~identifiers) for two structures of~this type.
+\end{itemize}
+The main solution commonly used is to store an array of~sorted identifiers \cite{chemaxon2025docs}. Any specified value can be retrieved in time \( \bigO(\log n) \) using binary search.
+
+
+\subsection{Time complexity of~calculating similarity coefficient}
+The union and intersection for two sets of~size \( n_1,\; n_2 \) stored as sorted arrays can be determined at time \( \bigO(n_1 + n_2) \) using the two-pointer method. As the calculation of~the similarity coefficient involves only the size of~the union and the intersection, its value can be determined faster. For this purpose, an exponential search can be used combined with a~binary search.
+\begin{algorithm}[H]
+    \caption{Computing Jaccard similarity}
+    \label{alg:data_struct}
+    \begin{algorithmic}[1]
+        \Require{\( X\in \real^{n_1},\;Y \in \real^{n_2} \) sorted}
+        \Ensure{\( s(X,Y) \)}
+        \State \( common \gets 0,\; index \gets 0 \)
+        \For {\( x \) \in \( X \)}
+        \State \( l \gets index,\; r \gets l + 1 \)
+        \While {\( r < n_2 \) and \( Y[r] < x \)}
+        \State \( l \gets r,\; r \gets 2 \cdot r \)
+        \EndWhile
+        \State \( new\_index \gets \text{binSearch}(Y, x, l, r) \)
+        \If{\( new\_index \neq -1 \)}
+        \State \( common \gets common + 1,\; index \gets new\_index + 1 \)
+        \Else
+        \State \( index \gets r \)
+        \EndIf
+        \EndFor
+        \State \( s \gets common \;/\; (n_1 + n_2 - common) \)
+        \State \Return \( s \)
+    \end{algorithmic}
+\end{algorithm}
+\begin{propos}
+    Given two ECFP fingerprints \(X,\; Y\) stored as described above, such that \( X,\; Y \) have sizes respectively \( n_1,\; n_2 \), where \( n_1 \leq n_2 \), then \( s(X,Y) \) can be calculated in \( \bigO(n_1 + n_1\log\frac{n_2}{n_1}) \) time complexity.
+\end{propos}
+\begin{proof}
+    Iterating over the values of~\( X \), we try to match elements in \( Y \). We perform a~binary search to find the index in Y to which we should jump. In total, this requires \( \bigO\!\pars{\sum_{i=1}^{n_1}\; \log x_i } \) comparisons, where \( x_i \) is the length of~the \( i \)-th jump and \( x_1 + \dots + x_{n_1} = n_2 \). From the inequality between the arithmetic and geometric mean, it follows that
+    \[
+        \sum_{i=1}^{n_1}\; \log x_i = \log\pars{\prod_{i=1}^{n_1}\; x_i} \leq \log\pars{\ceil{\frac{n_2}{n_1}}^{n_1}} = n_1\log\!\ceil{\frac{n_2}{n_1}},
+    \]
+    which gives time complexity \( \bigO\!\pars{n_1 + n_1\log\frac{n_2}{n_1}} \).
+\end{proof}
+Potential improvements to this complexity involve better use of~memory or parallelization of~calculations. In practice, however, the size of~the arrays is at most the order of \( 10^3 \), so further optimisations are not needed.

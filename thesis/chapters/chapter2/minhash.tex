@@ -1,0 +1,60 @@
+\subsection{MinHash reduction}
+Unlike the previous method, MinHash can be applied to both fixed and variable length vectors. The input vectors can be numerical or binary, but the latter requires transforming them into a set of non-zero indices. The advantage of the MinHash method is that it directly preserves the Jaccard similarity. Thus, the MinHash method is well suited to convert the list of identifiers returned by the ECFP algorithm directly into a fixed-length encoding without previously projecting it into a~vector. \\
+To present the MinHash reduction, first, a few definitions are needed \cite{broder1997resemblance, musco2020minhash}. For a fixed \( k \in \mathbb{N} \) and a set \( X \subseteq \Omega \) with given ordering corresponding to a random permutation of \( \Omega \), define:
+\[
+    \text{min}_k(X) = \set{x_i \in X : 1 \leq i \leq \min\set{k, \abs{X}}}
+\]
+Then, the similarity of sets \( X, Y \subseteq \Omega \) can be expressed as:
+\[
+    s_k(X,Y) = \frac{\abs{\text{min}_k(X \cup Y) \cap \text{min}_k(X) \cap \text{min}_k(Y)}}{\abs{\text{min}_k(X \cup Y)}}
+\]
+With the above definitions in hand, it is possible to prove the lemma that is fundamental for the~MinHash method.
+\begin{lemma}[\cite{broder1997resemblance}]
+    The value of \( s_k(X,Y) \) approximates the Jaccard similarity \( s(X,Y) \).
+\end{lemma}
+\begin{proof}
+    Since the sets \( X \) and \( Y \) are ordered according to a random permutation, each element of~the sets has an equal probability of being the \( i\)-th smallest. For a certain \( x \in \text{min}_k(X \cup Y) \):
+    \[
+        P(x \in \text{min}_k(X) \cap \text{min}_k(Y)) =  P(x \in  X \cap Y) = \frac{\abs{X \cap Y}}{\abs{X \cup Y}} = s(X,Y)
+    \]
+\end{proof}
+
+\noindent
+By setting \( k = 1 \), the above similarity estimator can be applied to the sets of ECFP identifiers, to derive an implementable algorithm.
+\begin{algorithm}[H]
+    \caption{MinHash reduction}
+    \label{alg:mh}
+    \begin{algorithmic}[1]
+    \Require{\( n \in \mathbb{N}, \ X \in \real^N \)}
+    \Ensure{\( \Tilde{X} \in \real^n \)}
+        \State define uniform hashing functions \( h_1, \dots, h_n: \real \rightarrow [0,1] \)
+        \State \( f(X)_i \gets \min_{x \in X}\: h_i(x) \)
+        \State \Return \( \brackets{\:f(X)_1, \dots, f(X)_n\:} \)
+    \end{algorithmic}
+\end{algorithm}
+\noindent
+The algorithm has time complexity \( \bigO(Nn) \). It can be proven to preserve the Jaccard similarity with high probability.
+\begin{propos}[\cite{broder1997resemblance, musco2020minhash}]
+\label{propos:MH}
+For \( 0 < \eps < 1 \) and \( n = \bigO(\log(m/\delta)\eps^{-2}) \), the Jaccard similarity of \( X,\;Y \) transformed using the MinHash method 
+\(
+    s(f(X),f(Y)) = \frac{1}{n} \sum_{i=1}^{n}\; \mathbbm{1}\!\brackets{f(X)_i = f(Y)_i}
+\)
+satisfies
+\[
+    s(X,Y) - \eps \leq s(f(X),f(Y)) \leq s(X,Y) + \eps
+\]
+for any \( X \in \real^{N_1},\; Y \in \real^{N_2} \).
+\end{propos}
+\begin{proof}
+The estimator \( s(f(X),f(Y)) \) is unbiased, because \( \mathbb{E}\brackets{\: \mathbbm{1}\!\brackets{f(X)_i = f(Y)_i} \:} = s(X,Y) \). \\
+The inaccuracy of approximation can be bounded by applying Hoeffding inequality:
+\[
+    P\pars{\abs{s(f(X),f(Y)) - s(X,Y)} \geq \eps} \leq 2e^{-2n\eps^2}
+\]
+It simply follows that for some \( X \) and  \( Y \), and \( n = \bigO(\log(1/\delta)\eps^{-2}) \) with probability at least \( (1-\delta) \) it is true that
+\[
+    s(X,Y) - \eps \leq s(f(X), f(Y)) \leq s(X,Y) + \eps
+\]
+Therefore, from the linearity of expectation, the similarity is preserved for all possible pairs of~vectors when \( n = \Omega(\log(m/\delta)\eps^{-2}) \).
+\end{proof}

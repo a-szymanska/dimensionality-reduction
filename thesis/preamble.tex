@@ -1,0 +1,106 @@
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{amsthm, amsmath, amsfonts}
+\usepackage{bbm}
+\usepackage{mathtools}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{float}
+\usepackage{cleveref}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{mismath}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{circuitikz}
+\usepackage{caption, subcaption}
+\usepackage{booktabs}
+\usepackage{titling}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[
+  style=numeric,
+  minbibnames=3,
+  maxbibnames=3,
+  maxcitenames=1,
+]{biblatex}
+\addbibresource{bibliography.bib}
+\AtBeginBibliography{\vspace*{20pt}}
+
+\geometry{
+    a4paper,
+    left=30mm,
+    top=30mm,
+}
+\onehalfspacing
+
+
+% Custom colours
+\definecolor{figRed}{rgb}{0.820, 0.400, 0.400}
+\definecolor{figBlue}{rgb}{0.451, 0.686, 0.792}
+\definecolor{figNavy}{rgb}{0.173, 0.259, 0.318}
+
+
+\renewcommand{\Title}{Dimensionality reduction methods \\ for Extended Connectivity Fingerprints}
+\renewcommand{\Supervisor}{dr hab. Krzysztof Turowski}
+\renewcommand{\Me}{Anna Szymańska}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=Black,
+    filecolor=Black,
+    urlcolor=figNavy,
+    citecolor=Black,
+    pdftitle={\Me, Bachelor Thesis}
+}
+
+% Commonly used
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{propos}[theorem]{Proposition}
+
+\newcommand{\brackets}[1]{\left[ #1 \right]}
+\newcommand{\pars}[1]{\left( #1 \right)}
+\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\norm}[1]{\| #1 \|}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\dotpr}[1]{\left\langle #1 \right\rangle}
+
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\one}{\mathbbm{1}}
+\newcommand{\eps}{\varepsilon}
+
+
+% Algorithm styling
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\makeatletter
+\renewcommand{\alglinenumber}[1]{\footnotesize #1}
+\makeatother
+
+% Code styling
+\usepackage{listings}
+\lstset{language=C++,
+    morekeywords={int, return},
+    basicstyle=\small\ttfamily,
+    commentstyle=\ttfamily,
+    stringstyle=\rmfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    belowcaptionskip=.75\baselineskip,
+    tabsize=4,
+}
+
+
+% Appendix styles
+\usepackage{titlesec}
+\newcommand{\appendixchapterformat}{
+  \titleformat{\chapter}[display] 
+    {\normalfont\huge\bfseries}{}{0pt}{}
+  \titlespacing*{\chapter}{0pt}{0pt}{0pt}
+}

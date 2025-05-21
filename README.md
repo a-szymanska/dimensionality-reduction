@@ -1,7 +1,7 @@
 # Reducing dimension of binary fingerprints
 This repository contains a wrapper for the implementation of the Johnson-Lindenstrauss and MinHash methods used for reducing dimensionality of binary fingerprints while preserving pairwise Jaccard similarity.
 
-<!-- The repository was created as a part of this [study](url).-->
+The repository was created as a part of this [study](thesis/main.pdf).
 
 ## Getting Started
 ### Requirements

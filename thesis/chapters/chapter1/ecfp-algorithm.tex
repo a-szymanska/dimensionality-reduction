@@ -1,0 +1,48 @@
+One widely used solution for molecular representation is Extended Connectivity Fingerprints (ECFP), a~class of~topological fingerprints based on neighbourhood information of~atoms~\cite{rogers2010ecfp}. They are intended to~reflect the~specific substructures present in the molecular graph. By~adjusting which features are included in~the~generic algorithm, they can be adapted to~encode specific properties of~a compound. The~results can be tuned by choosing what to~consider when assigning the~initial identifiers: atomic type and mass, bond multiplicities to~non-hydrogen neighbours, etc.
+
+\subsection{The ECFP algorithm}
+The ECFP encoding is computed with the~following algorithm \cite{rogers2010ecfp}:
+\begin{algorithm}[H]
+    \caption{ECFP fingerprint generation}
+    \label{alg:ecfp}
+    \begin{algorithmic}[1]
+    \Require{Graph \( G = (V, E) \)}
+    \Ensure{Set of identifiers \( L \)}
+        \For{\( v_j \in V \)}
+        \State \( h_j^0 \gets \text{id}(v_j) \)
+        \EndFor
+        \State \( L \gets \set{h_j^0 \colon j \in \abs{V}} \)
+        \For{\( i \in \set{1, \dots, r} \)}
+        \State \( L_j^i \gets \text{sort}\!\pars{\set{\pars{e_{jk}, h_k^{i-1}} \colon v_jv_k \in E}} \), where \( e_{jk} \) is the~multiplicity of~bond \( (v_j, v_k) \)
+        \State \( h_j^i \gets \text{hash}\!\pars{i, \ h_j^{i-1}, \ L_j^i} \)
+        \State \( L.\text{insert}(h_j^i) \)
+        \EndFor
+        \State \( L \gets \text{unique}(L) \)
+        \State \Return \( L \)
+    \end{algorithmic}
+\end{algorithm}
+
+As a standard approach, the~generated list of identifiers, also called connectivity values, is~transformed into a binary vector of a fixed length \( N \) \cite{leach2007chemoinformatics}. The most commonly used parameter values are \( N \in \set{1024, 2048, 4096} \) and \( r \in \set{1, 2, 3} \) \cite{landrum2012fingerprints}. The final representation in~the~form of~a~binary vector can be interpreted as a dictionary indexed by encoded substructures.
+
+As follows from the~algorithm, the~properties of~ECFP encoding strongly depend on the~choice of~parameters, in~particular the~value of~\( r \). The~parameter \( r \) determines the~number of~generated identifiers, which is bounded from above by \( (r+1) \) times the~number of~atoms in~the~molecule. The~algorithm may return fewer identifiers if certain substructures are repeated or hash collisions occur. Thus, at some level, the~ratio of~the number of~generated identifiers to~the~number of~atoms can provide a~measure of~the complexity of~the structure. If a~molecule contains various substructures, it is sufficient to~consider the~close neighbourhood of~atoms to~distinguish it from a~similar compound. The~choice of~\( r \) is crucial for determining similarity in~the~Jaccard metric. It is possible to~give an example of~molecules that need the~value of~parameter \( r \) linear in~terms of~their size to~distinguish between them. As an example, two carbon chains of~lengths \( k \) and \( k+1 \) for any \( r \) less than \( \frac{k-1}{2} \) will be considered identical under the~Jaccard metric (see Figure~\ref{fig:chain}).
+
+\begin{figure}[H]
+\centering
+\resizebox{0.85\textwidth}{!}{
+    \input{figures/carbon_chains}
+}
+\caption{Carbon chains \( P_{k} \) and \( P_{k+1} \)}
+\label{fig:chain}
+\end{figure}
+
+The ECFP algorithm is sensitive to~local changes, but not to~global ones. Replacing a~certain substructure with another that was not previously present significantly affects the~result returned by the~algorithm, whereas swapping substructures within a~compound does not. For instance, the~structure of~a carbon chain with substituents can be thought of~as a~tree, where the~substituents are subtrees. If we swap two subtrees, the~result is non-isomorphic to~the~original tree, but for small \( r \) the~encoding will not change, meaning that in~the~Jaccard metric the~trees will be identical. As an example, the~trees shown in~Figure~\ref{fig:nonisomorphic} for \( k = 10 \) and \( l = 7 \) have a~similarity of~\( 1.0 \) when the~fingerprints are generated using the~ECFP algorithm with parameters \( r=2 \) and \( N \geq 2048 \).
+
+\begin{figure}[H]
+\centering
+\resizebox{0.7\textwidth}{!}{
+    \input{figures/nonisomorphic}
+}
+\caption{Non-isomorphic trees corresponding to~hydrocarbons with swapped substituents}
+\label{fig:nonisomorphic}
+\end{figure}
+Overall, the~choice of~the parameters \( r \) and \( N \) affects both the~density of~fingerprints and the~results of~the similarity analysis of~encoded structures.

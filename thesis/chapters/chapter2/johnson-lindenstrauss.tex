@@ -1,0 +1,135 @@
+Fixed-length representations enable efficient storage of multidimensional numerical data. This property can simplify computations and is required for the input of certain classes of machine-learning models. However, reducing the dimensionality of the encodings inevitably causes some information loss, in particular a dictionary-like indication of the presence of a specific substructure. It may still be possible to retain enough information to preserve pairwise similarity between objects. Specifically for the case of ECFP encodings of a set of chemical compounds, the potential solutions are the Johnson-Lindenstrauss and MinHash methods. They let project numerical data into a lower-dimensional space while preserving pairwise distances with high probability.
+
+\subsection{Johnson-Lindenstrauss reduction}
+Johnson-Lindenstrauss method is used to project a numerical or binary vectors of a fixed length into a smaller dimension while preserving the pairwise Euclidean distance. The position of points in space can thus reflect the similarity between them. The correctness of the method is based on the following lemma.
+\begin{lemma}[Johnson–Lindenstrauss, \( 1984 \) \cite{ghojogh2021lj, weinberg2019lj}]
+\label{lemma:JL}
+For a fixed \( 0 < \eps < 1 \) and a set of \( m \) points \( \mathcal{X} \subset \real^N \) there exists linear mapping \( f\!:\real^N \rightarrow \real^n \), where \( n = \Omega(\log(m)\eps^{-2}) \), satisfying
+\[
+    (1-\eps)\:\norm{u-v}^2 \leq \norm{f(u)-f(v)}^2 \leq (1+\eps)\:\norm{u-v}^2
+\]
+for all \( u,\; v \in \mathcal{X} \).
+\end{lemma}
+\begin{proof}
+Let \( A \in \real^{n \times N} \) be a matrix such that \( a_{ij} \sim \mathcal{N}(0,1) \). Defining a projection \( \Pi = \frac{1}{\sqrt{n}}A \), \linebreak we prove that \( \Pi x \) approximates the norm of \( x \).
+\[
+    \norm{\Pi x}^2 = \left\|\frac{1}{\sqrt{n}}Ax\right\|^2 = \frac{1}{n} \sum_{i=1}^n\: (a_ix)^2
+\]
+The values \( a_{ij} \) are sampled at random from the distribution \( \mathcal{N}(0,1) \), so \( x_j a_{ij} \) is also a random variable.
+\[
+    \mathbb{E}\brackets{a_ix} = \mathbb{E}\brackets{\sum_{j=1}^N x_ja_{ij}} = \sum_{j=1}^N x_j\cdot \mathbb{E}\brackets{a_{ij}} = 0
+\]
+\[
+    \mathbb{E}\brackets{(a_ix)^2} = \operatorname{Var}[a_ix] = \sum_{j=1}^N \operatorname{Var}[a_{ij}x_j] = \sum_{j=1}^N x_j^2 \operatorname{Var}[a_{ij}] = \sum_{j=1}^N x_j^2 = \norm{x}^2.
+\]
+Hence, the expected norm of \( x \) after the projection is equal to the initial norm:
+\[
+    \mathbb{E} \brackets{\: \norm{\Pi x}^2 \:} = \mathbb{E} \brackets{\frac{1}{n} \sum_{i=1}^n\: (a_ix)^2} = \norm{x}^2
+\]
+The random variable \( a_ix \sim \mathcal{N}(0, \norm{x}^2) = \norm{x}\cdot \mathcal{N}(0, 1) \) is concentrated around the mean, so the approximation does not deviate significantly from the expected value. For \( y = \norm{\Pi x} \), by applying the Chernoff inequality we obtain:
+\[
+    \Pr \brackets{\abs{\mathbb{E}y - y} \geq \eps \cdot \mathbb{E}y} \leq 2 e^{-n \eps^2 / 8}
+\]
+For \( n = \Omega(\log(1/\delta)\eps^{-2}) \), the inequality:
+\[
+    (1-\eps)\norm{x}^2 \leq \norm{\Pi x}^2 \leq (1+\eps)\norm{x}^2
+\]
+is satisfied with probability at least \( (1-\delta) \). \\
+Substituting \( x \) with \( u-v \), we obtain the proof that the Johnson-Lindenstrauss reduction almost preserves Euclidean distance between any pair of vectors from \( \mathcal{X} \). Since there are \( {m \choose 2} \) pairs of points, from the linearity of expectation, all distances are preserved within error \( \eps \) with probability at least \( (1-\delta) \) if we assume \( n = \Omega(\log(m/\delta)\eps^{-2}) \).
+\end{proof}
+The proof is constructive and the defined projection can be easily implemented according to~the following steps:
+\begin{algorithm}[H]
+    \caption{Johnson-Lindenstrauss reduction}
+    \label{alg:jl}
+    \begin{algorithmic}[1]
+        \Require{\( n \in \mathbb{N},\; x \in \real^N \)}
+        \Ensure{\( x' \in \real^n \)}
+
+        \State Initialize \( A \in \real^{n \times N} \)
+        \For{\( i \in \set{0, \dots, n-1} \)}
+        \For{\( j \in \set{0, \dots, N-1} \)}
+        \State \( A[i][j] \gets \mathcal{N}(0,1) \)
+        \EndFor
+        \EndFor
+        \State \( \Pi \gets \frac{1}{\sqrt{n}}A \)
+        \State \Return \( \Pi x \)
+    \end{algorithmic}
+\end{algorithm}
+
+The transformation can be performed in time \( \bigO(m \cdot Nn) = \bigO(m \cdot N \: \log(m/\delta)\eps^{-2}) \) for a set of \( m \) vectors, that is, polynomial in terms of size of \( \mathcal{X} \) and the initial length of encoding, which in this case is a constant of order \( 10^3 \). Hence, for large sets of compounds it holds that \( m >\!\!> N \). The time complexity of multiplication of matrix \( A \) with a vector \( u \) can be improved to~\( \Theta(k \cdot \| u \|_0) = \bigO(n \cdot N) \), where \( k \) denotes the maximum support of columns of matrix \( A \)~\cite{freksen2021jl}. Different variants of the transformation \( f \) have been developed that satisfy the Johnson-Lindenstrauss lemma and improve time complexity. For example, the Fast Johnson-Lindenstrauss Transform, which uses a sparse projection matrix, achieves \( \bigO(N \log N) \) time complexity in the general case, while Ailon and Liberty reduced it to \( \bigO(N \log n) \) when \( n = \bigO(N^{1/2 - \gamma}) \) for a fixed constant \( \gamma > 0 \) \cite{freksen2021jl}.
+
+
+It remains to show that the Johnson-Lindenstrauss lemma can be generalised to another distance metric.
+\begin{propos}
+    The Johnson-Lindenstrauss lemma is true for Jaccard similarity metric.
+\end{propos}
+\begin{proof}
+The projection \( \Pi \) does not change the expected value of the scalar product, because matrix \( A^TA \) is usually close to the unit matrix.
+\[
+    \mathbb{E} \brackets{(A^TA)_{ij}} = \sum_{k=1}^{n} \mathbb{E} \brackets{a_{ki} \cdot a_{kj}} = \sum_{k=1}^{n} \one\!\brackets{i = j} = n \cdot \one\!\brackets{i = j}
+\]
+\[
+    \mathbb{E}\brackets{\dotpr{\Pi u, \Pi v}} = \mathbb{E}\brackets{\dotpr{\frac{1}{\sqrt{n}} Au, \frac{1}{\sqrt{n}} A v}} = \frac{1}{n}\mathbb{E} \brackets{u^TA^TAv} = \frac{1}{n} u^T \cdot \mathbb{E} \brackets{A^TA} \cdot v = u^Tv,
+\]
+The inequality
+\[
+    (1-\eps)\:\norm{u-v}^2 \leq \norm{f(u)-f(v)}^2 \leq (1+\eps)\:\norm{u-v}^2,
+\]
+follows from the Lemma~\ref{lemma:JL}. Now, it is needed to prove that the inequality also holds for the scalar product. The useful identities are: \\
+Parallelogram law:
+\[
+    \norm{x+y}^2 + \norm{x-y}^2 = 2\norm{x}^2 + 2\norm{y}^2
+\]
+Polarisation identity:
+\[
+    \dotpr{x, y} = \frac{1}{4} \pars{\norm{x+y}^2 - \norm{x-y}^2}
+\]
+It follows that:
+\[
+    \dotpr{f(u), f(v)} = \frac{1}{4}\pars{\norm{f(u)+f(v)}^2 - \norm{f(u)-f(v)}^2} \geq \frac{1}{4}\pars{(1-\eps)\norm{u+v}^2 - (1+\eps)\norm{u-v}^2}
+\]
+\[
+    = \frac{1}{4}\pars{\norm{u+v}^2 - \norm{u-v}^2} - \frac{1}{4}\eps\pars{\norm{u+v}^2 + \norm{u-v}^2} = \dotpr{u,v} - \frac{1}{2}\eps\pars{\norm{u}^2 + \norm{v}^2}
+\]
+To complete the proof, an additional observation is needed:
+\begin{lemma}
+    The Jaccard similarity is not affected by positive scalar multiplication.
+\end{lemma}
+\begin{proof}
+    Let \( c \in \real^{+} \), then:
+    \[
+        s(cu, cv) = \frac{\dotpr{cu, cv}}{\norm{cu}^2 + \norm{cv}^2 - \dotpr{cu, cv}}  = \frac{c^2 \dotpr{u, v}}{c^2\pars{\norm{u}^2 + \norm{v}^2} - c^2 \dotpr{u, v}} = \frac{\dotpr{u, v}}{\norm{u}^2 + \norm{v}^2 - \dotpr{u, v}} = s(u, v)
+    \]
+\end{proof}
+\noindent
+We can now assume that the binary fingerprints of length \( N \) have norm at most 1, since they can be multiplied by \( \frac{1}{\sqrt{N}} \), and then the dot product is bounded by:
+\[
+    \dotpr{f(u), f(v)} \geq \dotpr{u,v} - \frac{1}{2}\eps\pars{\norm{u}^2 + \norm{v}^2} \geq \dotpr{u,v} - \eps
+\]
+This proves the inequality:
+\[
+    (1-\eps) \dotpr{u,v} \leq \dotpr{f(u), f(v)} \leq (1+\eps)\dotpr{u,v}
+\]
+The formula for Jaccard similarity is:
+\[
+    s(f(u), f(v)) = \frac{\dotpr{f(u), f(v)}}{\norm{f(u)} + \norm{f(v)} - \dotpr{f(u), f(v)}} = \frac{\dotpr{f(u), f(v)}}{\norm{f(u)-f(v)} + \dotpr{f(u), f(v)}},
+\]
+which can be derived using the parallelogram law and the polarisation identity:
+\[
+    \norm{f(u)} + \norm{f(v)} - \dotpr{f(u), f(v)} = \frac{1}{2} \pars{\norm{f(u) + f(v)}^2 + \norm{f(u) - f(v)}^2} - \dotpr{f(u), f(v)}
+\]
+\[
+    = \frac{1}{2} \pars{4\dotpr{f(u), f(v)} + 2\norm{f(u) - f(v)}^2} - \dotpr{f(u), f(v)} = \dotpr{f(u), f(v)} + \norm{f(u) - f(v)}^2
+\]
+Plugging the above results for \( 0 < \eps \leq \frac{1}{2} \) into the formula for Jaccard similarity gives:
+\[
+    s(f(u), f(v)) \leq \frac{\dotpr{u, v} \cdot (1+\eps)}{\pars{\norm{u-v} + \dotpr{u, v}} \cdot (1-\eps)} = s(u, v) \cdot \pars{1 + \frac{2\eps}{1-\eps}} \leq s(u, v) \cdot (1 + 4\eps)
+\]
+\[
+    s(f(u), f(v)) \geq \frac{\dotpr{u, v} \cdot (1-\eps)}{\pars{\norm{u-v} + \dotpr{u, v}} \cdot (1+\eps)} = s(u, v) \cdot \pars{1 - \frac{2\eps}{1+\eps}} \leq s(u, v) \cdot (1 - 2\eps)
+\]
+It shows that for \( n \in \Omega(\log(m/\delta)\eps^{-2}) \) the Jaccard similarity satisfies
+\[
+    (1-\eps) \cdot s(u,v) \leq s(f(u), f(v)) \leq (1+\eps) \cdot s(u,v)
+\]
+\end{proof}
